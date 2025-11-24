@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="platinum">#E4E5E6</color>
+    <color name="white">#FFFFFF</color>
+    <color name="fit_green">#DFFD99</color>
+    <color name="fit_green_40">#AFF901</color>
+    <color name="black">#000000</color>
+    <color name="black_fit_88">#202020</color>
+</resources>
