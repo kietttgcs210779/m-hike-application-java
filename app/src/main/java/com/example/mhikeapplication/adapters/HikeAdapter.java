@@ -10,44 +10,44 @@ import com.example.mhikeapplication.R;
 import com.example.mhikeapplication.models.Hike;
 import java.util.List;
 
-public class UpcomingHikesAdapter extends RecyclerView.Adapter<UpcomingHikesAdapter.UpcomingHikeViewHolder> {
+public class HikeAdapter extends RecyclerView.Adapter<HikeAdapter.HikeViewHolder> {
 
-    private List<Hike> upcomingHikes;
+    private List<Hike> hikeList;
     private final OnHikeClickListener onHikeClickListener;
 
-    public UpcomingHikesAdapter(List<Hike> upcomingHikes, OnHikeClickListener onHikeClickListener) {
-        this.upcomingHikes = upcomingHikes;
+    public HikeAdapter(List<Hike> hikeList, OnHikeClickListener onHikeClickListener) {
+        this.hikeList = hikeList;
         this.onHikeClickListener = onHikeClickListener;
     }
 
     @NonNull
     @Override
-    public UpcomingHikeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public HikeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_hike, parent, false);
-        return new UpcomingHikeViewHolder(view);
+        return new HikeViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UpcomingHikeViewHolder holder, int position) {
-        Hike hike = upcomingHikes.get(position);
+    public void onBindViewHolder(@NonNull HikeViewHolder holder, int position) {
+        Hike hike = hikeList.get(position);
         holder.bind(hike, onHikeClickListener);
     }
 
     @Override
     public int getItemCount() {
-        return upcomingHikes.size();
+        return hikeList.size();
     }
 
     public void updateData(List<Hike> newHikeList) {
-        this.upcomingHikes.clear();
-        this.upcomingHikes.addAll(newHikeList);
+        this.hikeList.clear();
+        this.hikeList.addAll(newHikeList);
         notifyDataSetChanged();
     }
 
-    static class UpcomingHikeViewHolder extends RecyclerView.ViewHolder {
+    static class HikeViewHolder extends RecyclerView.ViewHolder {
         TextView hikeName, hikeLocation, hikeDate;
 
-        public UpcomingHikeViewHolder(@NonNull View itemView) {
+        public HikeViewHolder(@NonNull View itemView) {
             super(itemView);
             hikeName = itemView.findViewById(R.id.textViewItemHikeName);
             hikeLocation = itemView.findViewById(R.id.textViewItemHikeLocation);
