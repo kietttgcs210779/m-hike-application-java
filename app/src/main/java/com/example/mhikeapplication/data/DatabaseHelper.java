@@ -226,6 +226,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return observation;
     }
 
+    //Get hikes and search function.
     public List<Hike> getAllHikes() {
         List<Hike> hikes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -244,6 +245,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             cursor.close();
         }
+        return hikes;
+    }
+    
+    public List<Hike> searchHikes(String query) {
+        List<Hike> hikes = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selection = COLUMN_NAME + " LIKE ? OR " + COLUMN_LOCATION + " LIKE ?";
+        String[] selectionArgs = new String[]{"%" + query + "%", "%" + query + "%"};
+
+        Cursor cursor = db.query(TABLE_HIKES, null, selection, selectionArgs, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                hikes.add(cursorToHike(cursor));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
         return hikes;
     }
 

@@ -5,10 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -39,6 +42,7 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
     private Toolbar toolbar;
     private ViewPager2 viewPagerUpcomingHikes;
     private TextView textViewUpcomingTitle, textViewRunningTitle;
+    private HikeAdapter allHikesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +80,12 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
         recyclerViewRunningHikes.setNestedScrollingEnabled(false);
         recyclerViewAllHikes.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewAllHikes.setNestedScrollingEnabled(false);
+        allHikesAdapter = new HikeAdapter(new ArrayList<>(), this);
+        recyclerViewAllHikes.setAdapter(allHikesAdapter);
     }
 
     private void setupListeners() {
-        fabAddHike.setOnClickListener(v -> {
+        fabAddHike.setOnClickListener(view -> {
             Intent intent = new Intent(DashboardActivity.this, MainActivity.class);
             startActivity(intent);
         });
@@ -115,13 +121,10 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
         List<Hike> runningHikes = new ArrayList<>();
 
         for (Hike hike : allHikesList) {
-            switch (hike.getStatus()) {
-                case "Upcoming":
-                    upcomingHikes.add(hike);
-                    break;
-                case "Running":
-                    runningHikes.add(hike);
-                    break;
+            if ("Upcoming".equals(hike.getStatus())) {
+                upcomingHikes.add(hike);
+            } else if ("Running".equals(hike.getStatus())) {
+                runningHikes.add(hike);
             }
         }
         
@@ -129,7 +132,7 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
     }
 
     private void updateHikeStatuses() {
-        List<Hike> upcomingHikes = dbHelper.getAllHikes();
+        List<Hike> upcomingHikes = dbHelper.getAllHikes(); 
         Date now = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
@@ -166,12 +169,48 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
             recyclerViewRunningHikes.setAdapter(new HikeAdapter(runningHikes, this));
         }
 
-        recyclerViewAllHikes.setAdapter(new HikeAdapter(allHikes, this));
+        allHikesAdapter.updateData(allHikes);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.dashboard_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                List<Hike> filteredList = dbHelper.searchHikes(newText);
+                allHikesAdapter.updateData(filteredList);
+                return true;
+            }
+        });
+
+        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                loadData();
+                return true;
+            }
+        });
+
+        return true;
     }
 
     @Override
     public void onHikeClick(Hike hike) {
-        Intent intent = new Intent(DashboardActivity.this, HikeDetailsActivity.class);
+        Intent intent = new Intent(this, HikeDetailsActivity.class);
         intent.putExtra(HikeDetailsActivity.EXTRA_HIKE_ID, hike.getId());
         startActivity(intent);
     }
