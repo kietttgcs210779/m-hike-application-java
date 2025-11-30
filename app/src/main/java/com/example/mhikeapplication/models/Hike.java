@@ -13,6 +13,7 @@ public class Hike {
     private int rating;
     private String coverPhotoPath;
     private int isFavorite;
+    private String status;
 
     // Constructors
     public Hike() {
@@ -105,5 +106,13 @@ public class Hike {
 
     public void setIsFavorite(int isFavorite) {
         this.isFavorite = isFavorite;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

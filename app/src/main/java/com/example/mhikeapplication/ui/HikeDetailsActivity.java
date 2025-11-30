@@ -29,9 +29,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhikeapplication.R;
 import com.example.mhikeapplication.adapters.HikeImageAdapter;
+import com.example.mhikeapplication.adapters.ObservationAdapter;
 import com.example.mhikeapplication.data.DatabaseHelper;
 import com.example.mhikeapplication.models.Hike;
 import com.example.mhikeapplication.models.HikeImage;
+import com.example.mhikeapplication.models.HikeObservation;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -47,19 +49,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class HikeDetailsActivity extends AppCompatActivity {
+public class HikeDetailsActivity extends AppCompatActivity implements ObservationAdapter.OnObservationListener {
 
     public static final String EXTRA_HIKE_ID = "extra_hike_id";
     private static final long AUTO_SAVE_DELAY_MS = 1500;
 
     private TextView textViewDetailName, textViewDetailLocation, textViewDetailDate,
             textViewDetailParking, textViewDetailLength, textViewDetailDifficulty, textViewDetailDescription;
-    private Button buttonAddPhoto, buttonEdit, buttonDelete;
+    private Button buttonAddPhoto, buttonEdit, buttonDelete, buttonAddObservation, buttonMarkAsDone;
     private DatabaseHelper dbHelper;
     private long hikeId;
     private Hike currentHike;
-    private RecyclerView recyclerViewImages;
-    private View editDeleteButtonContainer;
+    private RecyclerView recyclerViewImages, recyclerViewObservations;
+    private View editDeleteButtonContainer, observationsContainer;
     private TextInputLayout notesLayout;
     private TextInputEditText editTextNotes;
 
@@ -113,11 +115,16 @@ public class HikeDetailsActivity extends AppCompatActivity {
         buttonAddPhoto = findViewById(R.id.buttonAddPhoto);
         buttonEdit = findViewById(R.id.buttonEdit);
         buttonDelete = findViewById(R.id.buttonDelete);
+        buttonMarkAsDone = findViewById(R.id.buttonMarkAsDone);
         editDeleteButtonContainer = findViewById(R.id.edit_delete_button_container);
         recyclerViewImages = findViewById(R.id.recyclerViewImages);
         recyclerViewImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         notesLayout = findViewById(R.id.notes_layout);
         editTextNotes = findViewById(R.id.editTextNotes);
+        observationsContainer = findViewById(R.id.observations_container);
+        recyclerViewObservations = findViewById(R.id.recyclerViewObservations);
+        buttonAddObservation = findViewById(R.id.buttonAddObservation);
+        recyclerViewObservations.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void initLaunchers() {
@@ -200,6 +207,16 @@ public class HikeDetailsActivity extends AppCompatActivity {
             startActivity(intent);
         });
         buttonAddPhoto.setOnClickListener(view -> showAddPhotoDialog());
+        buttonAddObservation.setOnClickListener(view -> {
+            Intent intent = new Intent(HikeDetailsActivity.this, AddEditObservationActivity.class);
+            intent.putExtra(AddEditObservationActivity.EXTRA_HIKE_ID, hikeId);
+            startActivity(intent);
+        });
+        buttonMarkAsDone.setOnClickListener(view -> {
+            dbHelper.updateHikeStatus(hikeId, "Done");
+            Toast.makeText(this, "Hike marked as Done!", Toast.LENGTH_SHORT).show();
+            updateUIVisibility();
+        });
 
         editTextNotes.addTextChangedListener(new TextWatcher() {
             @Override
@@ -266,7 +283,7 @@ public class HikeDetailsActivity extends AppCompatActivity {
         textViewDetailLength.setText("Length: " + currentHike.getLength() + " km");
         textViewDetailDifficulty.setText("Difficulty: " + currentHike.getDifficulty());
 
-        if (currentHike.getDescription() != null && !currentHike.getDescription().isEmpty()) {
+        if (currentHike.getDescription() != null && !currentHike.getDescription().isEmpty()){
             textViewDetailDescription.setText("Description: " + currentHike.getDescription());
             textViewDetailDescription.setVisibility(View.VISIBLE);
         } else {
@@ -280,33 +297,36 @@ public class HikeDetailsActivity extends AppCompatActivity {
 
         updateUIVisibility();
         loadHikeImages();
+        loadObservations();
     }
 
     private void updateUIVisibility() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        try {
-            Date hikeDate = sdf.parse(currentHike.getDate());
-            Calendar todayCal = Calendar.getInstance();
-            todayCal.set(Calendar.HOUR_OF_DAY, 0); todayCal.set(Calendar.MINUTE, 0); todayCal.set(Calendar.SECOND, 0); todayCal.set(Calendar.MILLISECOND, 0);
-            Date today = todayCal.getTime();
-
-            if (!hikeDate.after(today)) {
+        switch (currentHike.getStatus()) {
+            case "Running":
                 editDeleteButtonContainer.setVisibility(View.GONE);
                 buttonAddPhoto.setVisibility(View.VISIBLE);
                 recyclerViewImages.setVisibility(View.VISIBLE);
                 notesLayout.setVisibility(View.VISIBLE);
-            } else {
+                observationsContainer.setVisibility(View.VISIBLE);
+                buttonMarkAsDone.setVisibility(View.VISIBLE);
+                break;
+            case "Done":
+                editDeleteButtonContainer.setVisibility(View.GONE);
+                buttonAddPhoto.setVisibility(View.GONE);
+                recyclerViewImages.setVisibility(View.VISIBLE);
+                notesLayout.setVisibility(View.VISIBLE);
+                observationsContainer.setVisibility(View.VISIBLE);
+                buttonMarkAsDone.setVisibility(View.GONE);
+                break;
+            case "Upcoming":
+            default:
                 editDeleteButtonContainer.setVisibility(View.VISIBLE);
                 buttonAddPhoto.setVisibility(View.GONE);
                 recyclerViewImages.setVisibility(View.GONE);
                 notesLayout.setVisibility(View.GONE);
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-            editDeleteButtonContainer.setVisibility(View.GONE);
-            buttonAddPhoto.setVisibility(View.GONE);
-            recyclerViewImages.setVisibility(View.GONE);
-            notesLayout.setVisibility(View.GONE);
+                observationsContainer.setVisibility(View.GONE);
+                buttonMarkAsDone.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -316,6 +336,12 @@ public class HikeDetailsActivity extends AppCompatActivity {
         recyclerViewImages.setAdapter(adapter);
     }
 
+    private void loadObservations() {
+        List<HikeObservation> observationList = dbHelper.getAllObservationsForHike(hikeId);
+        ObservationAdapter adapter = new ObservationAdapter(observationList, this);
+        recyclerViewObservations.setAdapter(adapter);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -323,5 +349,27 @@ public class HikeDetailsActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onEditClick(HikeObservation observation) {
+        Intent intent = new Intent(this, AddEditObservationActivity.class);
+        intent.putExtra(AddEditObservationActivity.EXTRA_HIKE_ID, hikeId);
+        intent.putExtra(AddEditObservationActivity.EXTRA_OBSERVATION_ID, observation.getObservationId());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onDeleteClick(HikeObservation observation) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Observation")
+                .setMessage("Are you sure you want to delete this observation?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbHelper.deleteObservation(observation.getObservationId());
+                    Toast.makeText(this, "Observation deleted.", Toast.LENGTH_SHORT).show();
+                    loadObservations();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

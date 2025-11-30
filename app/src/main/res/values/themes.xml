@@ -17,9 +17,16 @@
         <item name="android:textColor">@color/platinum</item>
         <!-- Style for Spinner dropdown items -->
         <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItemStyle</item>
+        <!-- Reference to the new popup menu style -->
+        <item name="popupMenuStyle">@style/App.PopupMenu</item>
     </style>
 
     <style name="SpinnerDropDownItemStyle" parent="android:Widget.DropDownItem.Spinner">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <!-- Custom Popup Menu Style -->
+    <style name="App.PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
         <item name="android:textColor">@color/black</item>
     </style>
 </resources>

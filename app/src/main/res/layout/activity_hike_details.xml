@@ -48,6 +48,15 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <Button
+                    android:id="@+id/buttonMarkAsDone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="Mark as Done"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
                 <TextView
                     android:id="@+id/textViewDetailName"
                     android:layout_width="wrap_content"
@@ -146,11 +155,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="Trip Journal"
-                    android:background="@color/gray_100"
-                    app:hintTextColor="@color/black_fit_88"
+                    app:hintTextColor="@color/black"
                     app:counterEnabled="true"
-                    app:counterMaxLength="5000"
-                    app:boxBackgroundColor="@color/gray_100"
+                    app:counterMaxLength="2000"
                     android:visibility="gone"
                     tools:visibility="visible">
 
@@ -163,6 +170,46 @@
                         android:lines="6" />
 
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Observations Section -->
+                <LinearLayout
+                    android:id="@+id/observations_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Observations"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/buttonAddObservation"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:text="Add New" />
+                    </RelativeLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewObservations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                </LinearLayout>
 
             </LinearLayout>
         </LinearLayout>

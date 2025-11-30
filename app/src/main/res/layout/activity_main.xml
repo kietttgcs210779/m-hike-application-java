@@ -42,8 +42,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="example. Mount Everest Base Camp"
-                android:textColor="@color/platinum" />
+                android:hint="Example: Fansipan Trail"
+                android:textColor="@color/platinum"
+                android:textColorHint="@color/gray_400" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -56,23 +57,60 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="example. Sagarmatha National Park, Nepal"
-                android:textColor="@color/platinum" />
+                android:hint="Example: Lao Cai, Sapa"
+                android:textColor="@color/platinum"
+                android:textColorHint="@color/gray_400" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Date of the Hike *"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editTextDate"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:focusable="false"
-                android:hint="Select a date"
-                android:textColor="@color/platinum" />
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date *" />
+
+                    <EditText
+                        android:id="@+id/editTextDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:hint="Select Date"
+                        android:textColor="@color/platinum"
+                        android:textColorHint="@color/gray_400" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Time *" />
+
+                    <EditText
+                        android:id="@+id/editTextTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:hint="Select Time"
+                        android:textColor="@color/platinum"
+                        android:textColorHint="@color/gray_400" />
+                </LinearLayout>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -92,7 +130,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Yes"
-                    android:textColor="@color/platinum" />
+                    android:textColor="@color/platinum"
+                    android:textColorHint="@color/gray_400" />
 
                 <RadioButton
                     android:id="@+id/radioNo"
@@ -100,7 +139,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="No"
-                    android:textColor="@color/platinum" />
+                    android:textColor="@color/platinum"
+                    android:textColorHint="@color/gray_400" />
             </RadioGroup>
 
             <TextView
@@ -115,8 +155,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:inputType="numberDecimal"
-                android:hint="example., 5.5"
-                android:textColor="@color/platinum" />
+                android:hint="Example: 5.5"
+                android:textColor="@color/platinum"
+                android:textColorHint="@color/gray_400" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -145,7 +186,8 @@
                 android:inputType="textMultiLine"
                 android:lines="4"
                 android:hint="Describe your journey..."
-                android:textColor="@color/platinum" />
+                android:textColor="@color/platinum"
+                android:textColorHint="@color/gray_400" />
 
             <TextView
                 android:layout_width="wrap_content"

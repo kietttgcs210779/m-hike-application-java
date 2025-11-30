@@ -25,7 +25,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -34,12 +33,12 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
 
     private static final int STORAGE_PERMISSION_CODE = 101;
 
-    private RecyclerView recyclerViewAllHikes;
+    private RecyclerView recyclerViewAllHikes, recyclerViewRunningHikes;
     private FloatingActionButton fabAddHike;
     private DatabaseHelper dbHelper;
     private Toolbar toolbar;
     private ViewPager2 viewPagerUpcomingHikes;
-    private TextView textViewUpcomingTitle;
+    private TextView textViewUpcomingTitle, textViewRunningTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +59,8 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
         fabAddHike = findViewById(R.id.fabAddHike);
         viewPagerUpcomingHikes = findViewById(R.id.viewPagerUpcomingHikes);
         textViewUpcomingTitle = findViewById(R.id.textViewUpcomingTitle);
+        recyclerViewRunningHikes = findViewById(R.id.recyclerViewRunningHikes);
+        textViewRunningTitle = findViewById(R.id.textViewRunningTitle);
         recyclerViewAllHikes = findViewById(R.id.recyclerViewAllHikes);
     }
 
@@ -71,12 +72,14 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
     }
 
     private void setupRecyclerViews() {
+        recyclerViewRunningHikes.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewRunningHikes.setNestedScrollingEnabled(false);
         recyclerViewAllHikes.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewAllHikes.setNestedScrollingEnabled(false);
     }
 
     private void setupListeners() {
-        fabAddHike.setOnClickListener(view -> {
+        fabAddHike.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, MainActivity.class);
             startActivity(intent);
         });
@@ -106,29 +109,45 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
     }
 
     private void loadData() {
+        updateHikeStatuses();
         List<Hike> allHikesList = dbHelper.getAllHikes();
-        List<Hike> upcomingHikesList = new ArrayList<>();
-
-        Calendar todayCal = Calendar.getInstance();
-        todayCal.set(Calendar.HOUR_OF_DAY, 0); todayCal.set(Calendar.MINUTE, 0); todayCal.set(Calendar.SECOND, 0); todayCal.set(Calendar.MILLISECOND, 0);
-        Date today = todayCal.getTime();
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        List<Hike> upcomingHikes = new ArrayList<>();
+        List<Hike> runningHikes = new ArrayList<>();
 
         for (Hike hike : allHikesList) {
-            try {
-                Date hikeDate = sdf.parse(hike.getDate());
-                if (hikeDate != null && hikeDate.after(today)) {
-                    upcomingHikesList.add(hike);
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
+            switch (hike.getStatus()) {
+                case "Upcoming":
+                    upcomingHikes.add(hike);
+                    break;
+                case "Running":
+                    runningHikes.add(hike);
+                    break;
             }
         }
-        updateUI(allHikesList, upcomingHikesList);
+        
+        updateUI(allHikesList, upcomingHikes, runningHikes);
     }
 
-    private void updateUI(List<Hike> allHikes, List<Hike> upcomingHikes) {
+    private void updateHikeStatuses() {
+        List<Hike> upcomingHikes = dbHelper.getAllHikes();
+        Date now = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+
+        for (Hike hike : upcomingHikes) {
+            if ("Upcoming".equals(hike.getStatus())) {
+                try {
+                    Date hikeDate = sdf.parse(hike.getDate());
+                    if (hikeDate != null && hikeDate.before(now)) {
+                        dbHelper.updateHikeStatus(hike.getId(), "Running");
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void updateUI(List<Hike> allHikes, List<Hike> upcomingHikes, List<Hike> runningHikes) {
         if (upcomingHikes.isEmpty()) {
             textViewUpcomingTitle.setVisibility(View.GONE);
             viewPagerUpcomingHikes.setVisibility(View.GONE);
@@ -138,12 +157,21 @@ public class DashboardActivity extends AppCompatActivity implements OnHikeClickL
             viewPagerUpcomingHikes.setAdapter(new UpcomingHikesSliderAdapter(upcomingHikes));
         }
 
+        if(runningHikes.isEmpty()) {
+            textViewRunningTitle.setVisibility(View.GONE);
+            recyclerViewRunningHikes.setVisibility(View.GONE);
+        } else {
+            textViewRunningTitle.setVisibility(View.VISIBLE);
+            recyclerViewRunningHikes.setVisibility(View.VISIBLE);
+            recyclerViewRunningHikes.setAdapter(new HikeAdapter(runningHikes, this));
+        }
+
         recyclerViewAllHikes.setAdapter(new HikeAdapter(allHikes, this));
     }
 
     @Override
     public void onHikeClick(Hike hike) {
-        Intent intent = new Intent(this, HikeDetailsActivity.class);
+        Intent intent = new Intent(DashboardActivity.this, HikeDetailsActivity.class);
         intent.putExtra(HikeDetailsActivity.EXTRA_HIKE_ID, hike.getId());
         startActivity(intent);
     }

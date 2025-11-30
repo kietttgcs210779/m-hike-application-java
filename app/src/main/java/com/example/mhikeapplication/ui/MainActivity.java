@@ -1,11 +1,12 @@
 package com.example.mhikeapplication.ui;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,14 +31,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_HIKE_ID = "extra_hike_id";
 
-    private EditText editTextName, editTextLocation, editTextDate, editTextLength, editTextDescription;
+    private EditText editTextName, editTextLocation, editTextDate, editTextTime, editTextLength, editTextDescription;
     private RadioGroup radioGroupParking;
     private Spinner spinnerDifficulty;
     private Button buttonSave, buttonAddCoverPhoto;
@@ -48,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private String coverPhotoPath = "";
     private ActivityResultLauncher<String> coverPhotoLauncher;
     private long currentHikeId = -1;
+    private Calendar selectedDateTime = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             setTitle("Add New Hike");
+            updateDateEditText();
+            updateTimeEditText();
         }
     }
 
@@ -78,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         editTextName = findViewById(R.id.editTextName);
         editTextLocation = findViewById(R.id.editTextLocation);
         editTextDate = findViewById(R.id.editTextDate);
+        editTextTime = findViewById(R.id.editTextTime);
         editTextLength = findViewById(R.id.editTextLength);
         editTextDescription = findViewById(R.id.editTextDescription);
         radioGroupParking = findViewById(R.id.radioGroupParking);
@@ -112,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupListeners() {
         editTextDate.setOnClickListener(v -> showDatePickerDialog());
+        editTextTime.setOnClickListener(v -> showTimePickerDialog());
         buttonSave.setOnClickListener(v -> saveHike());
         buttonAddCoverPhoto.setOnClickListener(v -> coverPhotoLauncher.launch("image/*"));
     }
@@ -128,9 +136,19 @@ public class MainActivity extends AppCompatActivity {
         if (hike != null) {
             editTextName.setText(hike.getName());
             editTextLocation.setText(hike.getLocation());
-            editTextDate.setText(hike.getDate());
             editTextLength.setText(String.valueOf(hike.getLength()));
             editTextDescription.setText(hike.getDescription());
+
+            try {
+                SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault());
+                Date date = dateTimeFormat.parse(hike.getDate());
+                selectedDateTime.setTime(date);
+                updateDateEditText();
+                updateTimeEditText();
+            } catch (Exception e) {
+                editTextDate.setText(hike.getDate()); // fallback
+                editTextTime.setText("");
+            }
 
             if ("Yes".equalsIgnoreCase(hike.getParkingAvailable())) {
                 radioGroupParking.check(R.id.radioYes);
@@ -154,16 +172,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDatePickerDialog() {
-        final Calendar caculator = Calendar.getInstance();
-        int year = caculator.get(Calendar.YEAR);
-        int month = caculator.get(Calendar.MONTH);
-        int day = caculator.get(Calendar.DAY_OF_MONTH);
-
         new DatePickerDialog(this,
-                (view, year1, monthOfYear, dayOfMonth) -> {
-                    String selectedDate = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year1;
-                    editTextDate.setText(selectedDate);
-                }, year, month, day).show();
+                (view, year, month, dayOfMonth) -> {
+                    selectedDateTime.set(Calendar.YEAR, year);
+                    selectedDateTime.set(Calendar.MONTH, month);
+                    selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateDateEditText();
+                }, selectedDateTime.get(Calendar.YEAR), selectedDateTime.get(Calendar.MONTH), selectedDateTime.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void showTimePickerDialog() {
+        new TimePickerDialog(this,
+                (view, hourOfDay, minute) -> {
+                    selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedDateTime.set(Calendar.MINUTE, minute);
+                    updateTimeEditText();
+                }, selectedDateTime.get(Calendar.HOUR_OF_DAY), selectedDateTime.get(Calendar.MINUTE), DateFormat.is24HourFormat(this)).show();
+    }
+
+    private void updateDateEditText() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+        editTextDate.setText(dateFormat.format(selectedDateTime.getTime()));
+    }
+
+    private void updateTimeEditText() {
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+        editTextTime.setText(timeFormat.format(selectedDateTime.getTime()));
     }
 
     private String copyImageToInternalStorage(Uri uri) {
@@ -192,12 +226,11 @@ public class MainActivity extends AppCompatActivity {
     private void saveHike() {
         String name = editTextName.getText().toString().trim();
         String location = editTextLocation.getText().toString().trim();
-        String date = editTextDate.getText().toString().trim();
         String lengthStr = editTextLength.getText().toString().trim();
         String difficulty = spinnerDifficulty.getSelectedItem().toString();
         String description = editTextDescription.getText().toString().trim();
 
-        if (name.isEmpty() || location.isEmpty() || date.isEmpty() || lengthStr.isEmpty()) {
+        if (name.isEmpty() || location.isEmpty() || editTextDate.getText().toString().isEmpty() || editTextTime.getText().toString().isEmpty() || lengthStr.isEmpty()) {
             Toast.makeText(this, "Please fill all required fields (*)", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -211,11 +244,14 @@ public class MainActivity extends AppCompatActivity {
         RadioButton selectedRadioButton = findViewById(selectedParkingId);
         String parkingAvailable = selectedRadioButton.getText().toString();
         double length = Double.parseDouble(lengthStr);
+        
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault());
+        String fullDateTime = dateTimeFormat.format(selectedDateTime.getTime());
 
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_NAME, name);
         values.put(DatabaseHelper.COLUMN_LOCATION, location);
-        values.put(DatabaseHelper.COLUMN_DATE, date);
+        values.put(DatabaseHelper.COLUMN_DATE, fullDateTime);
         values.put(DatabaseHelper.COLUMN_PARKING_AVAILABLE, parkingAvailable);
         values.put(DatabaseHelper.COLUMN_LENGTH, length);
         values.put(DatabaseHelper.COLUMN_DIFFICULTY, difficulty);
