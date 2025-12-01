@@ -31,35 +31,40 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Name of the Hike *"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editTextName"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Example: Fansipan Trail"
-                android:textColor="@color/platinum"
-                android:textColorHint="@color/gray_400" />
+                android:textColorHint="@color/gray_50"
+                android:hint="Name of the Hike *" >
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Location *"
-                android:textStyle="bold" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50"/>
 
-            <EditText
-                android:id="@+id/editTextLocation"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Example: Lao Cai, Sapa"
-                android:textColor="@color/platinum"
-                android:textColorHint="@color/gray_400" />
+                android:textColorHint="@color/gray_50"
+                android:hint="Location *">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -67,49 +72,44 @@
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
 
-                <LinearLayout
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutDate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="8dp">
+                    android:layout_marginEnd="8dp"
+                    android:textColorHint="@color/gray_50"
+                    android:hint="Date *">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Date *" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:focusable="false"
-                        android:hint="Select Date"
-                        android:textColor="@color/platinum"
-                        android:textColorHint="@color/gray_400" />
-                </LinearLayout>
+                        android:background="@color/black"
+                        android:textColor="@color/gray_50" />
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutTime"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:textColorHint="@color/gray_50"
+                    android:hint="Time *">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Time *" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:focusable="false"
-                        android:hint="Select Time"
-                        android:textColor="@color/platinum"
-                        android:textColorHint="@color/gray_400" />
-                </LinearLayout>
+                        android:background="@color/black"
+                        android:textColor="@color/gray_50" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
             </LinearLayout>
 
             <TextView
@@ -129,41 +129,43 @@
                     android:id="@+id/radioYes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Yes"
-                    android:textColor="@color/platinum"
-                    android:textColorHint="@color/gray_400" />
+                    android:textColor="@color/gray_50"
+                    android:text="Yes" />
 
                 <RadioButton
                     android:id="@+id/radioNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="No"
-                    android:textColor="@color/platinum"
-                    android:textColorHint="@color/gray_400" />
+                    android:textColor="@color/gray_50"
+                    android:text="No" />
             </RadioGroup>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Length of the Hike (km) *"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editTextLength"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutLength"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:inputType="numberDecimal"
-                android:hint="Example: 5.5"
-                android:textColor="@color/platinum"
-                android:textColorHint="@color/gray_400" />
+                android:textColorHint="@color/gray_50"
+                android:hint="Length of the Hike (km) *"
+                app:suffixText="km">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextLength"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Difficulty Level *"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:background="@color/black_fit_88"/>
 
             <Spinner
                 android:id="@+id/spinnerDifficulty"
@@ -171,23 +173,24 @@
                 android:layout_height="48dp"
                 android:layout_marginBottom="16dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Description"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editTextDescription"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:gravity="top"
-                android:inputType="textMultiLine"
-                android:lines="4"
-                android:hint="Describe your journey..."
-                android:textColor="@color/platinum"
-                android:textColorHint="@color/gray_400" />
+                android:textColorHint="@color/gray_50"
+                android:hint="Description">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:inputType="textMultiLine"
+                    android:lines="4"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"

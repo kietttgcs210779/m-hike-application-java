@@ -3,14 +3,12 @@ package com.example.mhikeapplication.ui;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -25,6 +23,8 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.mhikeapplication.R;
 import com.example.mhikeapplication.data.DatabaseHelper;
 import com.example.mhikeapplication.models.Hike;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_HIKE_ID = "extra_hike_id";
 
-    private EditText editTextName, editTextLocation, editTextDate, editTextTime, editTextLength, editTextDescription;
+    private TextInputLayout textInputLayoutName, textInputLayoutLocation, textInputLayoutDate, textInputLayoutTime, textInputLayoutLength;
+    private TextInputEditText editTextName, editTextLocation, editTextDate, editTextTime, editTextLength, editTextDescription;
     private RadioGroup radioGroupParking;
     private Spinner spinnerDifficulty;
     private Button buttonSave, buttonAddCoverPhoto;
@@ -81,6 +82,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
+        textInputLayoutName = findViewById(R.id.textInputLayoutName);
+        textInputLayoutLocation = findViewById(R.id.textInputLayoutLocation);
+        textInputLayoutDate = findViewById(R.id.textInputLayoutDate);
+        textInputLayoutTime = findViewById(R.id.textInputLayoutTime);
+        textInputLayoutLength = findViewById(R.id.textInputLayoutLength);
         editTextName = findViewById(R.id.editTextName);
         editTextLocation = findViewById(R.id.editTextLocation);
         editTextDate = findViewById(R.id.editTextDate);
@@ -118,10 +124,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        editTextDate.setOnClickListener(v -> showDatePickerDialog());
-        editTextTime.setOnClickListener(v -> showTimePickerDialog());
-        buttonSave.setOnClickListener(v -> saveHike());
-        buttonAddCoverPhoto.setOnClickListener(v -> coverPhotoLauncher.launch("image/*"));
+        editTextDate.setOnClickListener(view -> showDatePickerDialog());
+        editTextTime.setOnClickListener(view -> showTimePickerDialog());
+        buttonSave.setOnClickListener(view -> saveHike());
+        buttonAddCoverPhoto.setOnClickListener(view -> coverPhotoLauncher.launch("image/*"));
     }
 
     private void setupSpinner() {
@@ -146,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 updateDateEditText();
                 updateTimeEditText();
             } catch (Exception e) {
-                editTextDate.setText(hike.getDate()); // fallback
+                editTextDate.setText(hike.getDate());
                 editTextTime.setText("");
             }
 
@@ -223,28 +229,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean validateInput() {
+        boolean isValid = true;
+
+        if (editTextName.getText().toString().trim().isEmpty()) {
+            textInputLayoutName.setError("Name is required");
+            isValid = false;
+        } else {
+            textInputLayoutName.setError(null);
+        }
+
+        if (editTextLocation.getText().toString().trim().isEmpty()) {
+            textInputLayoutLocation.setError("Location is required");
+            isValid = false;
+        } else {
+            textInputLayoutLocation.setError(null);
+        }
+
+        if (editTextDate.getText().toString().trim().isEmpty()) {
+            textInputLayoutDate.setError("Date is required");
+            isValid = false;
+        } else {
+            textInputLayoutDate.setError(null);
+        }
+
+        if (editTextTime.getText().toString().trim().isEmpty()) {
+            textInputLayoutTime.setError("Time is required");
+            isValid = false;
+        } else {
+            textInputLayoutTime.setError(null);
+        }
+
+        if (editTextLength.getText().toString().trim().isEmpty()) {
+            textInputLayoutLength.setError("Length is required");
+            isValid = false;
+        } else {
+            textInputLayoutLength.setError(null);
+        }
+
+        if (radioGroupParking.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(this, "Please select parking availability", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
     private void saveHike() {
+        if (!validateInput()) {
+            return;
+        }
+
         String name = editTextName.getText().toString().trim();
         String location = editTextLocation.getText().toString().trim();
-        String lengthStr = editTextLength.getText().toString().trim();
+        double length = Double.parseDouble(editTextLength.getText().toString().trim());
         String difficulty = spinnerDifficulty.getSelectedItem().toString();
         String description = editTextDescription.getText().toString().trim();
-
-        if (name.isEmpty() || location.isEmpty() || editTextDate.getText().toString().isEmpty() || editTextTime.getText().toString().isEmpty() || lengthStr.isEmpty()) {
-            Toast.makeText(this, "Please fill all required fields (*)", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int selectedParkingId = radioGroupParking.getCheckedRadioButtonId();
-        if (selectedParkingId == -1) {
-            Toast.makeText(this, "Please select parking availability", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        RadioButton selectedRadioButton = findViewById(selectedParkingId);
+        RadioButton selectedRadioButton = findViewById(radioGroupParking.getCheckedRadioButtonId());
         String parkingAvailable = selectedRadioButton.getText().toString();
-        double length = Double.parseDouble(lengthStr);
-        
+
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault());
         String fullDateTime = dateTimeFormat.format(selectedDateTime.getTime());
 

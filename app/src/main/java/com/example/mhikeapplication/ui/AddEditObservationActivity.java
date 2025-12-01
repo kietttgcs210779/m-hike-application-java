@@ -1,26 +1,40 @@
 package com.example.mhikeapplication.ui;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.example.mhikeapplication.R;
 import com.example.mhikeapplication.data.DatabaseHelper;
 import com.example.mhikeapplication.models.HikeObservation;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class AddEditObservationActivity extends AppCompatActivity {
@@ -30,13 +44,18 @@ public class AddEditObservationActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private TextInputEditText editTextObservationContent, editTextObservationNotes, editTextObservationDate, editTextObservationTime;
-    private Button buttonSaveObservation;
+    private Button buttonSaveObservation, buttonGetLocation;
+    private TextView textViewLocation;
     private DatabaseHelper dbHelper;
 
     private long hikeId = -1;
     private long observationId = -1;
     private Calendar selectedDateTime = Calendar.getInstance();
     private String originalObservationTime;
+    private String observationLocation = "";
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private ActivityResultLauncher<String> locationPermissionLauncher;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,8 +63,11 @@ public class AddEditObservationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_edit_observation);
 
         dbHelper = new DatabaseHelper(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         initViews();
         setupToolbar();
+        initLocationLauncher();
         setupListeners();
 
         hikeId = getIntent().getLongExtra(EXTRA_HIKE_ID, -1);
@@ -68,6 +90,8 @@ public class AddEditObservationActivity extends AppCompatActivity {
         editTextObservationDate = findViewById(R.id.editTextObservationDate);
         editTextObservationTime = findViewById(R.id.editTextObservationTime);
         buttonSaveObservation = findViewById(R.id.buttonSaveObservation);
+        buttonGetLocation = findViewById(R.id.buttonGetLocation);
+        textViewLocation = findViewById(R.id.textViewLocation);
     }
 
     private void setupToolbar() {
@@ -78,18 +102,73 @@ public class AddEditObservationActivity extends AppCompatActivity {
         }
     }
 
+    private void initLocationLauncher() {
+        locationPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        getCurrentLocation();
+                    } else {
+                        Toast.makeText(this, "Location permission is required to get your position.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void setupListeners() {
         buttonSaveObservation.setOnClickListener(v -> saveObservation());
         editTextObservationDate.setOnClickListener(v -> showDatePickerDialog());
         editTextObservationTime.setOnClickListener(v -> showTimePickerDialog());
+        buttonGetLocation.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        });
     }
-    
+
+    @SuppressLint("MissingPermission")
+    private void getCurrentLocation() {
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                Address address = addresses.get(0);
+                                String addressString = address.getAddressLine(0);
+                                observationLocation = addressString;
+                                textViewLocation.setText(addressString);
+                            } else {
+                                observationLocation = location.getLatitude() + ", " + location.getLongitude();
+                                textViewLocation.setText("Lat: " + location.getLatitude() + "\nLon: " + location.getLongitude());
+                                Toast.makeText(this, "Could not find address for this location.", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            observationLocation = location.getLatitude() + ", " + location.getLongitude();
+                            textViewLocation.setText("Lat: " + location.getLatitude() + "\nLon: " + location.getLongitude());
+                            Toast.makeText(this, "Address lookup service not available.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "Could not get location. Make sure location is enabled.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void loadObservationData() {
         HikeObservation observation = dbHelper.getObservationById(observationId);
         if (observation != null) {
             editTextObservationContent.setText(observation.getObservationContent());
             editTextObservationNotes.setText(observation.getObservationNotes());
             originalObservationTime = observation.getTimeOfObservation();
+            observationLocation = observation.getObservationLocation();
+            
+            if(observationLocation != null && !observationLocation.isEmpty()){
+                textViewLocation.setText(observationLocation);
+            } else {
+                textViewLocation.setText("Location not set");
+            }
 
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -98,13 +177,7 @@ public class AddEditObservationActivity extends AppCompatActivity {
                 updateDateAndTimeViews();
             } catch (Exception e) {
                 e.printStackTrace();
-                // Fallback if parsing fails
-                editTextObservationDate.setText("Error");
-                editTextObservationTime.setText("Error");
             }
-        } else {
-            Toast.makeText(this, "Could not find observation data.", Toast.LENGTH_SHORT).show();
-            finish();
         }
     }
 
@@ -149,6 +222,7 @@ public class AddEditObservationActivity extends AppCompatActivity {
         observation.setHikeId(hikeId);
         observation.setObservationContent(content);
         observation.setObservationNotes(notes);
+        observation.setObservationLocation(observationLocation);
 
         if (observationId == -1) {
             observation.setTimeOfObservation(fullDateTime);

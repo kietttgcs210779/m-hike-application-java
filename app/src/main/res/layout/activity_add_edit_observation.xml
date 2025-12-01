@@ -35,12 +35,15 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColorHint="@color/gray_50"
                 android:hint="Observation *">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextObservationContent"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,13 +58,16 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
+                    android:textColorHint="@color/gray_50"
                     android:hint="Date *">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextObservationDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:focusable="false"/>
+                        android:focusable="false"
+                        android:background="@color/black"
+                        android:textColor="@color/gray_50" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -69,29 +75,56 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:textColorHint="@color/gray_50"
                      android:hint="Time *">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextObservationTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:focusable="false"/>
+                        android:focusable="false"
+                        android:background="@color/black"
+                        android:textColor="@color/gray_50" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location"
+                android:layout_marginTop="16dp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/buttonGetLocation"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Get Current Location"/>
+
+            <TextView
+                android:id="@+id/textViewLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Location not set"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Notes">
+                android:textColorHint="@color/gray_50"
+                android:hint="Notes" >
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextObservationNotes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="top"
-                    android:lines="3"/>
+                    android:lines="3"
+                    android:background="@color/black"
+                    android:textColor="@color/gray_50" />
 
             </com.google.android.material.textfield.TextInputLayout>
 

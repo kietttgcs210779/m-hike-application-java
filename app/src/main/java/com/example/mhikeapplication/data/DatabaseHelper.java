@@ -15,7 +15,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mHike.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     // Hike Table
     public static final String TABLE_HIKES = "hikes";
@@ -43,7 +43,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_NOTE_ID = "note_id";
     public static final String COLUMN_NOTE_HIKE_ID_FK = "hike_id";
     public static final String COLUMN_NOTE_CONTENT = "content";
-    
+
     // Hike Observations Table
     public static final String TABLE_HIKE_OBSERVATIONS = "hike_observations";
     public static final String COLUMN_OBSERVATION_ID = "observation_id";
@@ -51,7 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_OBSERVATION_CONTENT = "observation_content";
     public static final String COLUMN_OBSERVATION_TIME = "time_of_observation";
     public static final String COLUMN_OBSERVATION_NOTES = "observation_notes";
-
+    public static final String COLUMN_OBSERVATION_LOCATION = "observation_location";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -92,13 +92,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 TABLE_HIKES + "(" + COLUMN_ID + ") ON DELETE CASCADE" +
                 ");";
         db.execSQL(CREATE_HIKE_NOTES_TABLE);
-        
+
         String CREATE_HIKE_OBSERVATIONS_TABLE = "CREATE TABLE " + TABLE_HIKE_OBSERVATIONS + " (" +
                 COLUMN_OBSERVATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_OBSERVATION_HIKE_ID_FK + " INTEGER NOT NULL, " +
                 COLUMN_OBSERVATION_CONTENT + " TEXT NOT NULL, " +
                 COLUMN_OBSERVATION_TIME + " TEXT NOT NULL, " +
                 COLUMN_OBSERVATION_NOTES + " TEXT, " +
+                COLUMN_OBSERVATION_LOCATION + " TEXT NOT NULL, " +
                 "FOREIGN KEY(" + COLUMN_OBSERVATION_HIKE_ID_FK + ") REFERENCES " +
                 TABLE_HIKES + "(" + COLUMN_ID + ") ON DELETE CASCADE" +
                 ");";
@@ -159,6 +160,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return note;
     }
+
     public long addObservation(HikeObservation observation) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -166,6 +168,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_OBSERVATION_CONTENT, observation.getObservationContent());
         values.put(COLUMN_OBSERVATION_TIME, observation.getTimeOfObservation());
         values.put(COLUMN_OBSERVATION_NOTES, observation.getObservationNotes());
+        values.put(COLUMN_OBSERVATION_LOCATION, observation.getObservationLocation());
         return db.insert(TABLE_HIKE_OBSERVATIONS, null, values);
     }
 
@@ -175,6 +178,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_OBSERVATION_CONTENT, observation.getObservationContent());
         values.put(COLUMN_OBSERVATION_TIME, observation.getTimeOfObservation());
         values.put(COLUMN_OBSERVATION_NOTES, observation.getObservationNotes());
+        values.put(COLUMN_OBSERVATION_LOCATION, observation.getObservationLocation());
         return db.update(TABLE_HIKE_OBSERVATIONS, values, COLUMN_OBSERVATION_ID + " = ?", new String[]{String.valueOf(observation.getObservationId())});
     }
 
@@ -202,6 +206,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 observation.setObservationContent(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_CONTENT)));
                 observation.setTimeOfObservation(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_TIME)));
                 observation.setObservationNotes(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_NOTES)));
+                observation.setObservationLocation(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_LOCATION)));
                 observationList.add(observation);
             } while (cursor.moveToNext());
             cursor.close();
@@ -221,12 +226,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             observation.setObservationContent(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_CONTENT)));
             observation.setTimeOfObservation(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_TIME)));
             observation.setObservationNotes(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_NOTES)));
+            observation.setObservationLocation(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_OBSERVATION_LOCATION)));
             cursor.close();
         }
         return observation;
     }
 
-    //Get hikes and search function.
     public List<Hike> getAllHikes() {
         List<Hike> hikes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();

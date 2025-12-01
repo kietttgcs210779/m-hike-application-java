@@ -7,6 +7,7 @@ public class HikeObservation {
     private String observationContent;
     private String timeOfObservation;
     private String observationNotes;
+    private String observationLocation;
 
     // Constructors
     public HikeObservation() {
@@ -51,5 +52,13 @@ public class HikeObservation {
 
     public void setObservationNotes(String observationNotes) {
         this.observationNotes = observationNotes;
+    }
+
+    public String getObservationLocation() {
+        return observationLocation;
+    }
+
+    public void setObservationLocation(String observationLocation) {
+        this.observationLocation = observationLocation;
     }
 }
