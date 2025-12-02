@@ -114,10 +114,10 @@ public class AddEditObservationActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        buttonSaveObservation.setOnClickListener(v -> saveObservation());
-        editTextObservationDate.setOnClickListener(v -> showDatePickerDialog());
-        editTextObservationTime.setOnClickListener(v -> showTimePickerDialog());
-        buttonGetLocation.setOnClickListener(v -> {
+        buttonSaveObservation.setOnClickListener(view -> saveObservation());
+        editTextObservationDate.setOnClickListener(view -> showDatePickerDialog());
+        editTextObservationTime.setOnClickListener(view -> showTimePickerDialog());
+        buttonGetLocation.setOnClickListener(view -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocation();
             } else {
